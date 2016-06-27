@@ -5,7 +5,9 @@ use warnings;
 use v5.10.0;
 
 use Carp 'croak';
+use File::Spec::Functions;
 use Mojo::UserAgent;
+use Mojo::Util 'spurt';
 use Mojo::URL;
 
 =begin
@@ -43,7 +45,7 @@ if ( $tx->success ) {
         for my $ul ( $div->find('ul')->each ) {
             $ul->find('li')->map(
                 sub {
-                    my $li            = shift;
+                    my $li           = shift;
                     my $relative_url = $li->at('a')->attr('href');
                     my $absolute_url = $reference_url->path($relative_url);
                     say "--> $absolute_url";
@@ -57,4 +59,37 @@ elsif ( my $error = $tx->error ) {
     croak sprintf "Error: %d %s while fetching %s", $error->{code} || 0,
       $error->{message},
       $tx->req->url;
+}
+
+my $current_active_connections = 0;
+
+#name each file downloaded using this increasing
+#counter to avoid spending extra functionality removing
+#special characters from html_file names like / that might
+#be interpreted as path
+my $file_name = 1;
+
+$ua = Mojo::UserAgent->new()->max_redirects(4);
+Mojo::IOLoop->recurring(
+    1 => sub {
+        if ( my $url = shift @keyword_urls ) {
+            $ua->get( $url => \&get_callback );
+        }
+        else {
+            Mojo::IOLoop->stop if Mojo::IOLoop->is_running;
+        }
+    }
+);
+Mojo::IOLoop->start unless Mojo::IOLoop->is_running;
+
+sub get_callback {
+    my ( undef, $tx ) = @_;
+    --$current_active_connections;
+
+    #extract if only if request was successful
+    return unless $tx->success;
+    say sprintf( "--> %d %s %s",
+        $tx->res->code, $tx->res->message, $tx->req->url );
+    spurt $tx->res->body, catfile( 'download', "$file_name.html" );
+    ++$file_name;
 }
