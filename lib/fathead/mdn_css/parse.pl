@@ -91,6 +91,14 @@ foreach my $html_file ( glob 'download/*.html' ) {
     # Preserve HTML and use the same lib as Mozilla
     # (http://prismjs.com/) to render code?
 
+    #remove <a> after h2#Syntax because it causes issues
+    #for code snippets parsing
+    if ($dom->at('h2#Syntax')){
+      my $next_node = $dom->at('h2#Syntax')->next;
+      if ($next_node && ($next_node->tag eq 'a')){
+        $dom->at('h2#Syntax')->next->remove;
+      }
+    }
     my $hs = HTML::Strip->new( emit_spaces => 0 );
     if ( my $pre = $dom->at('#Syntax ~ pre') ) {
 
