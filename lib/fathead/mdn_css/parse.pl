@@ -139,8 +139,15 @@ foreach my $html_file ( glob 'download/*.html' ) {
     $description = build_abstract( $description, $code, $initial_value );
 
     next unless $title && $link && $description;
+    my $see_also;
+    my $h2 = $dom->at('h2#See_also');
+    if ($h2) {
+        my $ul = $h2->following->first( sub { $_->tag eq 'ul' } );
+        $see_also = make_related_articles($ul) if $ul;
+    }
+    $see_also ||= '';
 
-    make_and_write_article( $title, $description, $link );
+    make_and_write_article( $title, $description, $link, $see_also );
 }
 
 # PRIVATE FUNCTIONS
@@ -208,16 +215,17 @@ sub build_abstract {
 }
 
 sub make_and_write_article {
-    my ( $title, $description, $link ) = @_;
+    my ( $title, $description, $link, $see_also ) = @_;
     say '';
     say "TITLE: $title";
     say "LINK: $link";
     say "DESCRIPTION: $description" if $description;
+    say "SEE ALSO: $see_also"       if $see_also;
     my $title_clean = clean_string($title);
     my @data        = join "\t",
       (
-        $title_clean, 'A', '', '', '', '', '', '', '', '', '', $description,
-        $link
+        $title_clean, 'A', '', '', '', '', $see_also, '', '', '', '',
+        $description, $link
       );
 
     if ( $title =~ /\(\)$/ or $title =~ qr/@/ ) {
@@ -260,6 +268,18 @@ sub make_redirect {
         push @data, $outputline;
     }
     return @data;
+}
+
+sub make_related_articles {
+    my ($ul) = @_;
+    my $related_articles;
+    my @related_titles;
+    for my $a ( $ul->find('a')->each ) {
+        push @related_titles, '[' . clean_string( $a->all_text ) . ']';
+    }
+    $related_articles = '[' . join( '\\\n', @related_titles ) . ']'
+      if @related_titles;
+    return $related_articles;
 }
 
 sub parse_fragment_data {
