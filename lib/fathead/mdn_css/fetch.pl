@@ -43,9 +43,10 @@ queue_urls_for_download();
 Mojo::IOLoop->recurring(
     0 => sub {
         for ( $current_active_connections + 1 .. $maximum_active_connections ) {
-            return ( $current_active_connections
-                  or Mojo::IOLoop->stop_gracefully )
-              unless my $url = shift @keyword_urls;
+            return (
+                $current_active_connections
+                  or Mojo::IOLoop->stop_gracefully
+            ) unless my $url = shift @keyword_urls;
 
             ++$current_active_connections;
             $ua->get(
@@ -66,7 +67,7 @@ Mojo::IOLoop->recurring(
                             my $redirect =
                               substr( $tx->req->url,
                                 rindex( $tx->req->url, "/" ) + 1 );
-                            $redirect_map{$redirect} = $keyword;
+                            push @{ $redirect_map{$redirect} }, $keyword;
                         }
                     }
                     elsif ( my $error = $tx->error ) {

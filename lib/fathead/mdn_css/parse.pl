@@ -366,7 +366,8 @@ sub create_redirects {
         # if the cleaned title was different from the title,
         # and a property redirects to the cleaned title, include it
         if ( exists $redirect_urls{$title_clean} ) {
-            push @data, _build_redirect( $redirect_urls{$title_clean}, $title );
+            push @data, _build_redirect( $_, $title )
+              for @{ $redirect_urls{$title_clean} };
         }
     }
     elsif ($postfix) {
@@ -375,7 +376,8 @@ sub create_redirects {
 
     # if a -moz or -webkit property redirects to  this title, include it
     if ( exists $redirect_urls{$title} ) {
-        push @data, _build_redirect( $redirect_urls{$title}, $title );
+        push @data, _build_redirect( $_, $title )
+          for @{ $redirect_urls{$title} };
     }
 
     _write_to_file(@data);
