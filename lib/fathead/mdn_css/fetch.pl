@@ -96,14 +96,13 @@ sub process_transaction {
         my $divs = $tx->res->dom->find('div.index, div.column-half');
         for my $div ( $divs->each ) {
             for my $ul ( $div->find('ul')->each ) {
-                $ul->find('li')->map(
+                $ul->find('a')->map(
                     sub {
-                        my $li = shift;
-                        if ( $li->at('a') ) {
-                            my $relative_url =
-                              Mojo::URL->new( $li->at('a')->attr('href') );
+                        my $a    = $_;
+                        my $href = $a->attr('href');
+                        if ($href) {
                             my $absolute_url =
-                              $relative_url->to_abs( $tx->req->url );
+                              Mojo::URL->new($href)->to_abs( $tx->req->url );
                             $urls{$absolute_url} = 1;
                         }
                     }
