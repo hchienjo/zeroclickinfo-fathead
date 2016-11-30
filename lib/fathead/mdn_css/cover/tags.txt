@@ -1,4 +1,3 @@
---*
 :active
 additive-symbols
 ::after
@@ -116,6 +115,7 @@ cross-fade()
 cubic-bezier()
 cursor
 <custom-indent>
+custom properties (--*)
 :default
 deg
 :dir()
