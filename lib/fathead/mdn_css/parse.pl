@@ -153,11 +153,21 @@ foreach my $html_file ( glob 'download/*.html' ) {
     );
     $title = lc $meta_with_title->attr('content') if $meta_with_title;
 
+    my $meta_with_description = $dom->find('meta')->first(
+        sub {
+            my $meta     = $_;
+            my $property = $meta->attr('property');
+            $property && $property =~ /og\:description/;
+        }
+    );
+    $description = $meta_with_description->attr('content')
+      if $meta_with_description;
+
     my $h2 = $dom->at('h2#Summary');
     if ($h2) {
         my $p = $h2->next;
         if ($p) {
-            $description = $p->all_text;
+            $description = $p->all_text unless $description;
             my $next = $p->next;
             if ( $next && $next->tag eq 'ul' ) {
                 my $li = $next->at('li');
@@ -169,19 +179,8 @@ foreach my $html_file ( glob 'download/*.html' ) {
                 }
                 else {
                     $description .=
-                      $next->find('li')->map('all_text')->join(', ');
-                }
-            }
-        }
-    }
-    else {
-        my $wiki_article = $dom->at('article#wikiArticle');
-        if ($wiki_article) {
-            my $div = $wiki_article->at('div');
-            if ($div) {
-                my $next_element = $div->next;
-                if ( $next_element && $next_element->tag eq 'p' ) {
-                    $description = $next_element->all_text;
+                      $next->find('li')->map('all_text')->join(', ')
+                      unless $description;
                 }
             }
         }
@@ -437,8 +436,8 @@ sub _build_article {
     # say "DESCRIPTION: $description" if $description;
     return join "\t",
       (
-        $title, 'A', '', '', $categories, '', '', '', '', '', '', $description,
-        $link
+        $title, 'A', '', '', $categories, '', '', '', '', '', '',
+        $description, $link
       );
 }
 
