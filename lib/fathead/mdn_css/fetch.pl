@@ -121,6 +121,7 @@ sub queue_urls_for_download {
 
     for my $url ( keys %urls ) {
         $url = Mojo::URL->new($url);
+        next unless $url->host eq 'developer.mozilla.org';
         if ( $url->fragment ) {
             if ( $url =~ qr/transform-function/ ) {
 
