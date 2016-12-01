@@ -199,6 +199,24 @@ foreach my $html_file ( glob 'download/*.html' ) {
             }
         }
     }
+    my $values = $dom->at('h2#Values');
+    if ($values) {
+        my $next_element = $values->next;
+        if ( $next_element && $next_element->tag eq 'div' ) {
+            my $link_with_fragment =
+              Mojo::URL->new($link)->clone->fragment('Values');
+            for my $h3 ( $next_element->find('h3')->each ) {
+                my $title = $h3->at('code')->all_text;
+                my $next  = $h3->next;
+                my $description;
+                if ( $next->tag eq 'table' ) {
+                    $description = $next->at('tr')->find('td')->[1]->all_text;
+                    $description = create_abstract($description);
+                }
+                create_article( $title, $description, $link_with_fragment );
+            }
+        }
+    }
 
     # Check if article already processed
     if ( exists $SEEN{$title} ) {
