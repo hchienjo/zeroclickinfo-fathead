@@ -215,6 +215,32 @@ foreach my $html_file ( glob 'download/*.html' ) {
                 }
                 create_article( $title, $description, $link_with_fragment );
             }
+            my $keywords_h3 = $dom->find('h3')->first(
+                sub {
+                    my $h3 = $_;
+                    $h3->attr('id') && $h3->attr('id') =~ /keywords/i;
+                }
+            );
+            if ($keywords_h3) {
+                my $pure_link    = $link_with_fragment->clone->fragment('');
+                my $next_element = $keywords_h3->next;
+                do {
+                    if ( $next_element->tag eq 'h4' ) {
+                        my $title = $next_element->at('code')->all_text;
+                        my $link =
+                          $pure_link->clone->fragment(
+                            $next_element->attr('id') );
+                        $next_element = $next_element->next;
+                        if ( $next_element && $next_element->tag eq 'table' ) {
+                            my $tr = $next_element->at('tr');
+                            $description = $tr->all_text;
+                            $description = create_abstract($description);
+                            create_article( $title, $description, $link );
+                        }
+                        $next_element = $next_element->next;
+                    }
+                } while ( $next_element && $next_element->tag eq 'h4' );
+            }
         }
     }
 
