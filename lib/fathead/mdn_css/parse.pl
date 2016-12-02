@@ -186,15 +186,17 @@ foreach my $html_file ( glob 'download/*.html' ) {
         }
     }
 
-    my $units = $dom->at('h2#Units');
+    my $units = $dom->at('h2#Units') || $dom->at('h3#Values');
     if ($units) {
         my $next_element = $units->next;
         if ( $next_element && $next_element->tag eq 'dl' ) {
             my $link_with_fragment = $link->clone->fragment('Units');
             for my $dt ( $next_element->find('dt')->each ) {
-                my $title       = $dt->all_text;
-                my $description = create_abstract( $dt->next->all_text );
-                create_article( $title, $description, $link_with_fragment );
+                my $title = $dt->all_text;
+                if ( $dt->next ) {
+                    my $description = create_abstract( $dt->next->all_text );
+                    create_article( $title, $description, $link_with_fragment );
+                }
             }
         }
     }
