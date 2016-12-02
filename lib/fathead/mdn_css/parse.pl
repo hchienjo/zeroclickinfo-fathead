@@ -7,6 +7,7 @@ use warnings;
 use Carp 'croak';
 use File::Spec::Functions;
 use feature 'state';
+use List::Util 'first';
 use Mojo::DOM;
 use Mojo::URL;
 use Mojo::Util 'slurp';
@@ -354,6 +355,19 @@ sub create_article {
         my @cats = @{ $titles{$lookup}->{categories} };
         p(@cats);
         $categories = join '\\n', @cats;
+
+        my $is_in_css_function_category = first {
+            $_ eq 'css functions'
+        }
+        @cats;
+        if ($is_in_css_function_category) {
+            my $bracketed_title = "$title()";
+            if ( $bracketed_title ne $title ) {
+
+                push @data, _build_redirect( "$title()", $title )
+                  unless $title =~ /\(\S{0,}\)/;
+            }
+        }
     }
 
     push @data, _build_article( $title, $categories, $description, $link );
