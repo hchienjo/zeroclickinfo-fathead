@@ -190,8 +190,7 @@ foreach my $html_file ( glob 'download/*.html' ) {
     if ($units) {
         my $next_element = $units->next;
         if ( $next_element && $next_element->tag eq 'dl' ) {
-            my $link_with_fragment =
-              Mojo::URL->new($link)->clone->fragment('Units');
+            my $link_with_fragment = $link->clone->fragment('Units');
             for my $dt ( $next_element->find('dt')->each ) {
                 my $title       = $dt->all_text;
                 my $description = create_abstract( $dt->next->all_text );
@@ -203,8 +202,7 @@ foreach my $html_file ( glob 'download/*.html' ) {
     if ($values) {
         my $next_element = $values->next;
         if ( $next_element && $next_element->tag eq 'div' ) {
-            my $link_with_fragment =
-              Mojo::URL->new($link)->clone->fragment('Values');
+            my $link_with_fragment = $link->clone->fragment('Values');
             for my $h3 ( $next_element->find('h3')->each ) {
                 my $title = $h3->at('code')->all_text;
                 my $next  = $h3->next;
@@ -222,7 +220,7 @@ foreach my $html_file ( glob 'download/*.html' ) {
                 }
             );
             if ($keywords_h3) {
-                my $pure_link    = $link_with_fragment->clone->fragment('');
+                my $pure_link    = $link->clone->fragment('');
                 my $next_element = $keywords_h3->next;
                 do {
                     if ( $next_element->tag eq 'h4' ) {
